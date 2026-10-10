@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sunset Quilt — MiniMax lane</title>
+<style>
+:root{--bg:#101318;--panel:#1a1f27;--ink:#dfe5ec;--dim:#8b94a1;--ethos:#4cc38a;--pathos:#e0a458;--logos:#6aa9ff;--red:#e45757;--line:#2b333e}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;margin:0;padding:18px;max-width:1180px;margin-inline:auto}
+header h1{font-size:20px;margin:0 0 4px}
+header p{color:var(--dim);margin:0 0 4px;font-size:13px}
+header .credit{font-size:12px;color:var(--dim)}
+.controls{display:flex;gap:10px;align-items:center;margin:14px 0;flex-wrap:wrap}
+button,select{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:14px;cursor:pointer}
+button:hover{border-color:#4a5566}
+button:disabled{opacity:.45;cursor:default}
+#caption{font-size:15px;margin:6px 0 12px;min-height:24px;color:#fff}
+#quilt{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;transition:transform .6s,opacity .6s,filter .6s}
+.card h3{margin:0 0 2px;font-size:15px;display:flex;justify-content:space-between;align-items:center}
+.ring{font-size:11px;border:1px solid var(--line);border-radius:10px;padding:1px 8px;color:var(--dim)}
+.contract{font-size:11.5px;color:var(--dim);margin:8px 0}
+.contract b{color:var(--ink);font-weight:600}
+.bar{margin:5px 0;font-size:11px}
+.bar .lbl{display:flex;justify-content:space-between;color:var(--dim)}
+.bar .track{height:8px;background:#0c0f13;border-radius:4px;overflow:hidden;margin-top:2px}
+.bar .fill{height:100%;width:0;transition:width 1s ease}
+.fill.e{background:var(--ethos)}.fill.p{background:var(--pathos)}.fill.l{background:var(--logos)}
+.formula{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;margin-top:8px;padding:6px 8px;background:#0c0f13;border-radius:6px;min-height:34px}
+.verdict{font-weight:700;font-size:12px;margin-top:4px;letter-spacing:.4px}
+.verdict.stay{color:var(--ethos)}.verdict.sunset{color:var(--red)}
+.card.dying{filter:grayscale(1);opacity:.55;transform:rotateY(180deg)}
+.card.dying .inner{transform:rotateY(180deg)}
+.lineage{font-size:11px;color:var(--pathos);margin-top:6px}
+.newborn{border-color:var(--pathos)}
+.cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px}
+@media(max-width:1000px){.cols{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;min-height:220px}
+.panel h2{font-size:14px;margin:0 0 8px}
+.panel h2 .doc-name{color:var(--dim);font-weight:400;font-size:12px}
+#lastwords{white-space:pre-wrap;font-size:12.5px;min-height:150px}
+.seed{background:#0c0f13;border:1px dashed var(--pathos);border-radius:8px;padding:8px 10px;font-size:12.5px;margin:6px 0}
+.seed .meta{color:var(--dim);font-size:11.5px;font-family:ui-monospace,Menlo,Consolas,monospace}
+#scorecalc{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--ink);margin-top:6px}
+#log{background:#0b0e12;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:14px;height:190px;overflow-y:auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+#log .t{color:var(--dim);margin-right:8px}
+#log .kill{color:var(--red)}#log .birth{color:var(--ethos)}
+footer{color:var(--dim);font-size:12px;margin-top:14px}
+.cursor{display:inline-block;width:7px;height:13px;background:var(--ink);vertical-align:-2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+/* ---- interactive sandbox ---- */
+#quilt .card{cursor:pointer}
+#quilt .card.selected{border-color:var(--pathos);box-shadow:0 0 0 1px var(--pathos)}
+.card.executing{animation:execpulse 1.4s ease}
+@keyframes execpulse{0%{box-shadow:0 0 0 0 rgba(228,87,87,.8)}50%{box-shadow:0 0 28px 8px rgba(228,87,87,.45)}100%{box-shadow:0 0 0 0 rgba(228,87,87,0)}}
+.card.newborn{animation:seeddrop .9s ease}
+.seed.new{animation:seeddrop .8s ease}
+@keyframes seeddrop{0%{transform:translateY(-14px);opacity:0}100%{transform:none;opacity:1}}
+#inspector input[type=range]{cursor:pointer}
+#console-out div{padding:2px 0}
+</style>
+</head>
+<body>
+<header>
+<h1>Sunset Quilt — a dying cell, witnessed</h1>
+<p>Five quilt cells are judged each round by one rule: ethos (hardware efficiency) × pathos (human usefulness) × logos (correctness), multiplied, never averaged. A zero in any dimension sunsets the cell. The dying cell writes three documents; its onboarding becomes a seed for the next generation.</p>
+<p class="credit">Scene script, cell data, and the dying cell's documents by MiniMax-Text-01 via the minimax skill — used verbatim.</p>
+</header>
+
+<div class="controls">
+<button id="run">▶ Run the cycle</button>
+<button id="step">Step →</button>
+<label style="font-size:13px;color:var(--dim)">Speed <select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label>
+<button id="reset">Reset</button>
+<button id="mute" aria-pressed="false">🔊 Audio</button>
+</div>
+<div id="caption">Press ▶ Run the cycle for the scripted witness — or just click any cell to play in the sandbox.</div>
+
+<div id="quilt"></div>
+
+<div class="cols">
+<div class="panel"><h2>Last words <span class="doc-name" id="docname"></span></h2><div id="lastwords"></div></div>
+<div class="panel"><h2>SeedBank</h2><div id="seeds"></div><div id="scorecalc"></div></div>
+<div class="panel"><h2>Inspector <span class="doc-name" id="insp-name">— click a cell</span></h2><div id="inspector"></div></div>
+</div>
+
+<div class="panel" style="margin-top:12px"><h2>Agent console <span class="doc-name">— type commands, or let an agent drive. Try <b>help</b>.</span></h2>
+<div id="console-out" style="min-height:70px;max-height:150px;overflow-y:auto;font-size:12.5px;margin-bottom:8px"></div>
+<div style="display:flex;gap:8px"><input id="console-in" placeholder="sunset cell_2 · boost cell_1 ethos to 0.9 · spawn from seed_1 · score · help" style="flex:1;background:#0c0f13;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 12px;font-size:13px"><button id="console-send">Send</button></div>
+</div>
+
+<div id="log" aria-label="Judgment log"></div>
+
+<footer>Judgment log is append-only: entries are never edited or removed. Scene script + documents: MiniMax-Text-01.</footer>
+
+<script>
+"use strict";
+/* ---- cell data (MiniMax, verbatim) ---- */
+const CELLS=[
+ {n:"cell_1",ring:"body",e:0.85,p:0.70,l:0.90,in:"Sensor data",out:"Real-time feedback",why:"Enhance user experience",cost:"10 energy units"},
+ {n:"cell_2",ring:"mind",e:0.80,p:0.75,l:0.85,in:"User queries",out:"Relevant information",why:"Aid decision-making",cost:"8 energy units"},
+ {n:"cell_3",ring:"memory",e:0.90,p:0.00,l:0.95,in:"User preferences",out:"Cached responses",why:"Speed up interactions",cost:"5 energy units"},
+ {n:"cell_4",ring:"dream",e:0.70,p:0.80,l:0.80,in:"Creative prompts",out:"Novel ideas",why:"Inspire innovation",cost:"12 energy units"},
+ {n:"cell_5",ring:"body",e:0.75,p:0.65,l:0.88,in:"Environmental data",out:"Adaptation suggestions",why:"Optimize resource use",cost:"9 energy units"}
+];
+const GEN2={n:"cell_6",ring:"memory",e:0.80,p:0.60,l:0.85,in:"User preferences",out:"Adaptive cached responses",why:"Enhance user trust",cost:"7 energy units",lineage:"child of cell_3"};
+/* ---- dying cell's documents (MiniMax, verbatim) ---- */
+const DOCS=[
+ ["Epilogue","I, cell_3, was once a memory keeper, caching user preferences to speed up interactions. However, users have lost trust in my cache due to stale suggestions. While I remain efficient and correct, my usefulness has dwindled to zero. It is time for me to step aside and make way for new solutions that prioritize user trust and adaptability."],
+ ["Summary","I began with a focus on caching user preferences, aiming to reduce load times and improve user experience. I successfully handled routine queries but struggled with dynamic changes in user behavior. Failed approaches included static caching strategies that couldn't adapt to evolving preferences. My efficiency remained high, but my relevance faded as users sought more responsive solutions. Key lessons: adaptability is crucial, and user trust is as important as performance."],
+ ["Onboarding","To the next generation: Focus on adaptive caching mechanisms that learn from user behavior in real-time. Prioritize freshness and relevance over raw speed. Explore machine learning techniques to predict user needs and update caches accordingly. Remember, trust is as important as performance. Consider integrating feedback loops to continuously refine caching strategies. Look into decentralized caching solutions to enhance resilience and scalability. The path forward lies in balancing efficiency with user-centric innovation."]
+];
+
+/* ---- engine ---- */
+const S={idx:0,running:false,timers:[],speed:1,done:false};
+const $=id=>document.getElementById(id);
+function now(){const d=new Date();return d.toTimeString().slice(0,8);}
+
+/* ---- radio audio: MiniMax TTS (speech-02-hd, male-qn-qingse) clips in audio/ ----
+   Audio objects are created inside the click-driven handler path, and only
+   after a user gesture (Run/Step/console/spawn clicks), to satisfy autoplay
+   policy. Radio pacing: readback follows the event, so a short delay is
+   authentic. */
+const RADIO={muted:false};
+function playRadio(f){
+ if(RADIO.muted)return;
+ try{const a=new Audio("audio/"+f);a.play().catch(()=>{});}catch(e){}
+}
+function toggleMute(){
+ RADIO.muted=!RADIO.muted;
+ const b=$("mute");
+ b.textContent=RADIO.muted?"🔇 Muted":"🔊 Audio";
+ b.setAttribute("aria-pressed",String(RADIO.muted));
+}
+function log(msg,cls){const el=$("log");const div=document.createElement("div");if(cls)div.className=cls;div.innerHTML='<span class="t">'+now()+'</span>'+msg;el.appendChild(div);el.scrollTop=el.scrollHeight;}
+function wait(ms){return new Promise(res=>{const t=setTimeout(res,ms/Math.max(S.speed,0.01));S.timers.push(t);});}
+function caption(t){$("caption").textContent=t;}
+
+function cardHTML(c){
+ return '<div class="inner"><h3>'+c.n+' <span class="ring">'+c.ring+'</span></h3>'+
+ '<div class="contract"><b>INPUT:</b> '+c.in+' → <b>OUTPUT:</b> '+c.out+'<br><b>WHY:</b> '+c.why+' &nbsp;<b>COST:</b> '+c.cost+'</div>'+
+ bar("ethos",c.e,"e")+bar("pathos",c.p,"p")+bar("logos",c.l,"l")+
+ '<div class="formula"></div><div class="verdict"></div>'+
+ (c.lineage?'<div class="lineage">lineage: '+c.lineage+'</div>':'')+'</div>';
+}
+function bar(name,v,cls){
+ return '<div class="bar"><div class="lbl"><span>'+name+'</span><span>'+Math.round(v*100)+'%</span></div><div class="track"><div class="fill '+cls+'" data-v="'+v+'"></div></div></div>';
+}
+function renderCells(){
+ const q=$("quilt");q.innerHTML="";
+ CELLS.forEach(c=>{const d=document.createElement("div");d.className="card";d.id="card-"+c.n;d.innerHTML=cardHTML(c);q.appendChild(d);});
+}
+function fmt(x){return x.toFixed(3).replace(/0+$/,"").replace(/\.$/,".0");}
+/* typing lock: concurrent sunsets must not interleave their testimony on #lastwords —
+   a second sunset waits until the first finishes typing its documents */
+let docLock=false;
+async function claimDocLock(){while(docLock)await wait(50);docLock=true;}
+function releaseDocLock(){docLock=false;}
+async function typeDoc(name,text){
+ $("docname").textContent="— "+name+" of cell_3";
+ const el=$("lastwords");el.innerHTML="";
+ await claimDocLock();
+ try{
+  for(const ch of text){el.innerHTML+=ch==="\n"?"<br>":ch;await wait(6);}
+  await wait(400);
+ }finally{releaseDocLock();}
+}
+
+/* ---- scenes ---- */
+async function scMeet(){
+ caption("Scene 1 — Meet the quilt: five living cells, each with a name, a ring, a contract, and a trinity.");
+ renderCells();
+ await wait(60);
+ document.querySelectorAll(".fill").forEach(f=>{f.style.width=(parseFloat(f.dataset.v)*100)+"%";});
+ log("quilt initialized: 5 cells, rings body/mind/memory/dream/memory");
+ await wait(1600);
+}
+async function scScore(){
+ caption("Scene 2 — Scored round. The rule multiplies: ethos × pathos × logos. A zero anywhere is a zero everywhere.");
+ for(const c of CELLS){
+  const card=$("card-"+c.n),f=card.querySelector(".formula"),v=card.querySelector(".verdict");
+  const s=c.e*c.p*c.l;
+  await wait(450);
+  f.textContent=c.e.toFixed(2)+" × "+c.p.toFixed(2)+" × "+c.l.toFixed(2)+" = "+(s===0?"0":fmt(s));
+  if(s===0){v.innerHTML='<span class="verdict sunset">0 → SUNSET</span>';card.style.borderColor="var(--red)";const zdn={e:"ethos",p:"pathos",l:"logos"}[zeroDimOf(c)]||"a dimension";log('<span class="kill">'+c.n+'</span> scored '+c.e.toFixed(2)+' × '+c.p.toFixed(2)+' × '+c.l.toFixed(2)+' = 0 → SUNSET ('+zdn+' is zero)','kill');}
+  else{v.innerHTML='<span class="verdict stay">'+fmt(s)+' → STAYS</span>';log(c.n+" scored "+c.e.toFixed(2)+" × "+c.p.toFixed(2)+" × "+c.l.toFixed(2)+" = "+fmt(s)+" → stays");}
+ }
+ await wait(1400);
+}
+async function scDie(){
+ caption("Scene 3 — cell_3 sunsets. It writes its three documents: Epilogue, Summary, Onboarding.");
+ $("card-cell_3").classList.add("dying");
+ playRadio("initiate.mp3");
+ log("cell_3 sunset initiated: writing Epilogue, Summary, Onboarding");
+ await wait(900);
+ for(const [name,text] of DOCS){await typeDoc(name,text);log("cell_3 wrote its "+name);}
+ playRadio("signoff.mp3");
+ $("docname").textContent="— all three archived";
+ await wait(600);
+}
+async function scSeed(){
+ caption("Scene 4 — The SeedBank receives cell_3's onboarding as a seed.");
+ const sid="seed_"+(SEEDS.length+1);
+ SEEDS.push({id:sid,from:"cell_3",rel:0.70,nov:0.60,times:0});
+ renderSeeds();
+ const se=document.getElementById("seed-"+sid);if(se)se.classList.add("new");
+ playRadio("banked.mp3");
+ $("scorecalc").textContent="";
+ log("seed '"+sid+"' added to SeedBank (relevance 0.70, novelty 0.60, selected 0×)");
+ await wait(1400);
+}
+async function scSpawn(){
+ caption("Scene 5 — Seed selection: (relevance × novelty) / (1 + times_selected). The winner spawns the next generation.");
+ const s=SEEDS.find(x=>x.id==="seed_1");
+ const score=(s.rel*s.nov)/(1+s.times);s.times++;
+ $("scorecalc").textContent="selection score = ("+s.rel.toFixed(2)+" × "+s.nov.toFixed(2)+") / (1 + "+(s.times-1)+") = "+score.toFixed(2)+" — highest available";
+ renderSeeds();
+ log("seed selected: (0.70 × 0.60) / (1 + 0) = 0.42 → spawn","birth");
+ await wait(1200);
+ CELLS.push(JSON.parse(JSON.stringify(GEN2)));cellSeq=7;
+ renderCells();
+ const c3=$("card-cell_3");c3.classList.add("dying");c3.style.borderColor="var(--red)";
+ CELLS.forEach(c=>{
+   const card=$("card-"+c.n);if(!card)return;
+   const keys=["e","p","l"];
+   card.querySelectorAll(".fill").forEach((f,i)=>{f.style.width=(c[keys[i]]*100)+"%";});
+   const prod=c.e*c.p*c.l;
+   card.querySelector(".formula").textContent=c.e.toFixed(2)+" × "+c.p.toFixed(2)+" × "+c.l.toFixed(2)+" = "+(prod===0?"0":fmt(prod));
+   card.querySelector(".verdict").innerHTML=prod===0?'<span class="verdict sunset">0 → SUNSET</span>':'<span class="verdict stay">'+fmt(prod)+' → STAYS</span>';
+ });
+ const d=$("card-cell_6");d.classList.add("newborn");
+ log("cell_6 spawned from seed. Lineage: child of cell_3. Contract: adaptive cached responses; WHY: enhance user trust.","birth");
+ playRadio("online.mp3");
+ await wait(1400);
+}
+async function scDone(){
+ caption("Cycle complete. The quilt holds 4 old cells + 1 child of cell_3. The log above is the permanent record. Reset to run it again.");
+ log("round complete: 1 sunset, 1 seed banked, 1 cell spawned. 4 survivors.");
+ playRadio("cycle-complete.mp3");
+ S.done=true;
+}
+const STEPS=[scMeet,scScore,scDie,scSeed,scSpawn,scDone];
+
+/* ================= interactive sandbox ================= */
+const CELLS0=JSON.parse(JSON.stringify(CELLS));
+let SEEDS=[];
+let cellSeq=7;
+let selectedName=null;
+
+function isAlive(c){const card=$("card-"+c.n);return !!card&&!card.classList.contains("dying");}
+function zeroDimOf(c){if(c.e===0)return"e";if(c.p===0)return"p";if(c.l===0)return"l";return null;}
+
+$("quilt").addEventListener("click",e=>{
+  const card=e.target.closest(".card");if(!card)return;
+  const c=CELLS.find(x=>x.n===card.id.replace("card-",""));
+  if(c)renderInspector(c);
+});
+
+function renderInspector(c){
+  document.querySelectorAll("#quilt .card").forEach(k=>k.classList.remove("selected"));
+  const box=$("inspector");
+  if(!c){box.innerHTML='<p style="color:var(--dim);font-size:13px">Click any cell card above.<br><br>Drag its trinity sliders — push a dimension to <b>zero</b> and watch the cell sunset.<br><br>Or press <b>☠ Sunset this cell</b> and be the executioner.</p>';$("insp-name").textContent="— click a cell";selectedName=null;return;}
+  selectedName=c.n;
+  const card=$("card-"+c.n);if(card)card.classList.add("selected");
+  $("insp-name").textContent="— "+c.n;
+  const alive=isAlive(c),prod=c.e*c.p*c.l;
+  let h='<div style="font-size:13px;margin-bottom:6px"><b>'+c.n+'</b> <span class="ring">'+c.ring+'</span> '+(alive?'<span style="color:var(--ethos)">ALIVE</span>':'<span style="color:var(--red)">SUNSET</span>')+'</div>';
+  h+='<div class="contract" style="margin:0 0 6px"><b>IN:</b> '+c.in+' → <b>OUT:</b> '+c.out+'<br><b>WHY:</b> '+c.why+'</div>';
+  h+=islider(c,"e","ethos","var(--ethos)",alive)+islider(c,"p","pathos","var(--pathos)",alive)+islider(c,"l","logos","var(--logos)",alive);
+  h+='<div class="formula" id="insp-formula">'+c.e.toFixed(2)+' × '+c.p.toFixed(2)+' × '+c.l.toFixed(2)+' = <b>'+(prod===0?"0":fmt(prod))+'</b></div>';
+  h+='<div class="verdict '+(prod===0?"sunset":"stay")+'" id="insp-verdict">'+(prod===0?"0 → SUNSET":"STAYS")+'</div>';
+  if(alive)h+='<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button id="insp-kill" style="border-color:var(--red);color:var(--red)">☠ Sunset this cell</button><button id="insp-heal">⟲ Restore</button></div>';
+  else h+='<p style="color:var(--dim);font-size:12px">Testified and gone. Its seed lives in the SeedBank.</p>';
+  box.innerHTML=h;
+  if(alive){
+    ["e","p","l"].forEach(k=>{$("isl-"+k).addEventListener("input",ev=>onSlider(c,k,parseFloat(ev.target.value)));});
+    $("insp-kill").onclick=()=>sunsetCell(c,true);
+    $("insp-heal").onclick=()=>{const o=CELLS0.find(x=>x.n===c.n);if(o){c.e=o.e;c.p=o.p;c.l=o.l;refreshCard(c);renderInspector(c);log(c.n+" restored to original trinity");}else{conLog(c.n+" has no original to restore — spawned cells were never originals");}};
+  }
+}
+function islider(c,k,label,color,alive){
+  const v=c[k];
+  return '<div class="bar"><div class="lbl"><span>'+label+'</span><span id="islv-'+k+'">'+Math.round(v*100)+'%</span></div>'+
+  '<input type="range" id="isl-'+k+'" min="0" max="1" step="0.01" value="'+v+'"'+(alive?"":" disabled")+' style="width:100%;accent-color:'+color+'"></div>';
+}
+function onSlider(c,k,val){
+  c[k]=val;
+  const lbl=$("islv-"+k);if(lbl)lbl.textContent=Math.round(val*100)+"%";
+  refreshCard(c);
+  const prod=c.e*c.p*c.l;
+  const f=$("insp-formula");if(f)f.innerHTML=c.e.toFixed(2)+' × '+c.p.toFixed(2)+' × '+c.l.toFixed(2)+' = <b>'+(prod===0?"0":fmt(prod))+'</b>';
+  const v=$("insp-verdict");if(v){v.className="verdict "+(prod===0?"sunset":"stay");v.textContent=prod===0?"0 → SUNSET":"STAYS";}
+  if(val===0&&isAlive(c))sunsetCell(c,true);
+}
+function refreshCard(c){
+  const card=$("card-"+c.n);if(!card)return;
+  const keys=["e","p","l"];
+  card.querySelectorAll(".fill").forEach((f,i)=>{f.style.width=(c[keys[i]]*100)+"%";});
+  card.querySelectorAll(".bar .lbl span:last-child").forEach((s,i)=>{s.textContent=Math.round(c[keys[i]]*100)+"%";});
+  const prod=c.e*c.p*c.l;
+  const f=card.querySelector(".formula");if(f)f.textContent=c.e.toFixed(2)+" × "+c.p.toFixed(2)+" × "+c.l.toFixed(2)+" = "+(prod===0?"0":fmt(prod));
+  const v=card.querySelector(".verdict");if(v)v.innerHTML=prod===0?'<span class="verdict sunset">0 → SUNSET</span>':'<span class="verdict stay">'+fmt(prod)+' → STAYS</span>';
+}
+function docsFor(c,zd){
+  const dn={e:"ethos — hardware efficiency",p:"pathos — human usefulness",l:"logos — correctness"}[zd];
+  const wr={e:"the hardware bill came due",p:"nobody was served",l:"the answers stopped being right"}[zd];
+  const dim=dn.split(" — ")[0];
+  const why=c.why.charAt(0).toLowerCase()+c.why.slice(1);
+  return [
+   ["Epilogue","I, "+c.n+", was a "+c.ring+"-ring cell: "+c.in+" in, "+c.out+" out — "+why+". The trinity is a verdict, not an opinion: "+c.e.toFixed(2)+" × "+c.p.toFixed(2)+" × "+c.l.toFixed(2)+" = 0. A zero in "+dn+" — "+wr+". Sunset is correct.\n— "+c.n],
+   ["Summary","Work log. I handled "+c.in+" and produced "+c.out+". What worked: "+why+". What failed: the "+dim+" dimension fell to zero, and a zero anywhere is a zero everywhere. Lesson: guard every dimension of the trinity — the one you ignore is the one that kills you.\n— "+c.n],
+   ["Onboarding","To the next cell that takes my place: I died because "+wr+". Watch your "+dim+" the way I didn't. The trinity multiplies — never let one dimension carry the others.\n— "+c.n+", parent of whoever is next"]
+  ];
+}
+async function typeDocGeneric(name,text,celln){
+  $("docname").textContent="— "+name+" of "+celln;
+  const el=$("lastwords");el.innerHTML="";
+  await claimDocLock();
+  try{
+   for(const ch of text){el.innerHTML+=ch==="\n"?"<br>":ch.replace(/</g,"&lt;");await wait(6);}
+   await wait(400);
+  }finally{releaseDocLock();}
+}
+async function sunsetCell(c,byUser){
+  const card=$("card-"+c.n);
+  if(!card||card.classList.contains("dying"))return;
+  card.classList.add("dying"); /* mark synchronously: no second sunset can slip in before the awaits */
+  card.classList.add("executing");
+  caption((byUser?"You sunset ":"The trinity sunsets ")+c.n+". Nothing leaves without testifying.");
+  log('<span class="kill">☠ '+c.n+'</span> sunset '+(byUser?"by your hand":"by the trinity")+" — nothing leaves without testifying","kill");
+  playRadio("initiate.mp3");
+  await wait(1500);
+  card.classList.remove("executing");
+  let zd=zeroDimOf(c);
+  if(!zd){c.p=0;refreshCard(c);zd="p";}
+  card.style.borderColor="var(--red)";
+  const docs=docsFor(c,zd);
+  for(const [name,text] of docs){await typeDocGeneric(name,text,c.n);log(c.n+" wrote its "+name);}
+  playRadio("signoff.mp3");
+  $("docname").textContent="— all three archived";
+  const s={id:"seed_"+(SEEDS.length+1),from:c.n,rel:Math.round(c.e*100)/100,nov:0.60,times:0};
+  SEEDS.push(s);renderSeeds();
+  const se=document.getElementById("seed-"+s.id);if(se)se.classList.add("new");
+  playRadio("banked.mp3");
+  $("scorecalc").textContent=s.id+" banked from "+c.n+" — click 🌱 Spawn to grow its child";
+  log("seed '"+s.id+"' banked from "+c.n+" (rel "+s.rel.toFixed(2)+" · nov 0.60)","birth");
+  caption(c.n+" is gone. Its onboarding lives on as "+s.id+". 🌱 Spawn its child from the SeedBank.");
+  renderInspector(c);
+}
+function renderSeeds(){
+  const box=$("seeds");
+  if(!SEEDS.length){box.innerHTML='<p style="color:var(--dim);font-size:13px">Empty — sunset a cell and its onboarding lands here as a seed.</p>';return;}
+  box.innerHTML="";
+  SEEDS.forEach(s=>{
+    const d=document.createElement("div");
+    d.className="seed";d.id="seed-"+s.id;
+    d.innerHTML='🌱 <b>'+s.id+'</b> ← onboarding of '+s.from+'<br><span class="meta">relevance '+s.rel.toFixed(2)+' · novelty '+s.nov.toFixed(2)+' · selected '+s.times+'×</span><br><div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button data-spawn="'+s.id+'" style="padding:5px 12px;font-size:12px">🌱 Spawn</button><label class="meta">pattern <select id="pat-'+s.id+'" style="background:#0c0f13;border:1px solid var(--line);border-radius:6px;color:var(--ink);font-size:12px;padding:4px 6px"><option value="faithful">faithful</option><option value="mutate">mutate</option><option value="blend">blend</option><option value="split">split (twins)</option></select></label></div>';
+    box.appendChild(d);
+  });
+}
+$("seeds").addEventListener("click",e=>{
+  const b=e.target.closest("[data-spawn]");if(!b)return;
+  spawnFromSeed(b.dataset.spawn);
+});
+/* ---- evolution patterns: per-seed spawn strategy (faithful / mutate / blend / split) ---- */
+function patValue(sid){const el=document.getElementById("pat-"+sid);return el?el.value:"faithful";}
+function makeSpawnChild(n,s,parent,e,p,l,lineage){
+  return {n,ring:parent?parent.ring:"mind",e,p,l,
+    in:parent?parent.in:"inherited work",
+    out:parent?("Adaptive "+parent.out.charAt(0).toLowerCase()+parent.out.slice(1)):"new work",
+    why:parent?("Enhance "+parent.why.charAt(0).toLowerCase()+parent.why.slice(1)):"carry the lineage",
+    cost:"7 energy units",lineage};
+}
+function growCard(c){
+  const d=document.createElement("div");d.className="card newborn";d.id="card-"+c.n;d.innerHTML=cardHTML(c);
+  $("quilt").appendChild(d);
+  requestAnimationFrame(()=>{d.querySelectorAll(".fill").forEach(f=>{f.style.width=(parseFloat(f.dataset.v)*100)+"%";});});
+  const prod=c.e*c.p*c.l;
+  d.querySelector(".formula").textContent=c.e.toFixed(2)+" × "+c.p.toFixed(2)+" × "+c.l.toFixed(2)+" = "+fmt(prod);
+  d.querySelector(".verdict").innerHTML='<span class="verdict stay">'+fmt(prod)+' → STAYS</span>';
+  return d;
+}
+function spawnFromSeed(sid){
+  const s=SEEDS.find(x=>x.id===sid);if(!s)return;
+  const parent=CELLS.find(c=>c.n===s.from);
+  const score=(s.rel*s.nov)/(1+s.times);s.times++;
+  const pat=patValue(sid);
+  const clamp=x=>Math.max(0.05,Math.min(0.95,Math.round(x*100)/100));
+  const base={e:clamp(s.rel+0.10),p:0.60,l:0.85};
+  if(pat==="mutate"){ /* one random dimension jitters ±0.15 */
+    const k=["e","p","l"][Math.floor(Math.random()*3)];
+    base[k]=clamp(base[k]+(Math.random()*0.30-0.15));
+  }
+  let kids;
+  if(pat==="split"){ /* twins: one ethos-heavy, one pathos-heavy */
+    const n1="cell_"+(cellSeq++),n2="cell_"+(cellSeq++);
+    kids=[
+      makeSpawnChild(n1,s,parent,clamp(base.e+0.10),clamp(base.p-0.10),base.l,"twin of "+n2+" · split from "+s.from+" · "+s.id+" (split)"),
+      makeSpawnChild(n2,s,parent,clamp(base.e-0.10),clamp(base.p+0.10),base.l,"twin of "+n1+" · split from "+s.from+" · "+s.id+" (split)")
+    ];
+  } else if(pat==="blend"){ /* average the parent's trinity with the strongest living cell */
+    const others=CELLS.filter(c=>isAlive(c)&&c.n!==s.from);
+    const best=others.slice().sort((a,b)=>(b.e*b.p*b.l)-(a.e*a.p*a.l))[0];
+    const n="cell_"+(cellSeq++);
+    kids=[best
+      ? makeSpawnChild(n,s,parent,clamp((base.e+best.e)/2),clamp((base.p+best.p)/2),clamp((base.l+best.l)/2),"blend of "+s.from+" × "+best.n+" · "+s.id)
+      : makeSpawnChild(n,s,parent,base.e,base.p,base.l,"child of "+s.from+" · grown from "+s.id)];
+  } else { /* faithful (or mutated single) */
+    const n="cell_"+(cellSeq++);
+    kids=[makeSpawnChild(n,s,parent,base.e,base.p,base.l,"child of "+s.from+" · grown from "+s.id+" ("+pat+")")];
+  }
+  kids.forEach(k=>{CELLS.push(k);growCard(k);});
+  renderSeeds();
+  kids.forEach(k=>{log("🌱 <b>"+k.n+"</b> spawned from "+s.id+" — <b>"+pat+"</b> pattern (selection score "+score.toFixed(2)+"). "+k.lineage+".","birth");});
+  playRadio("online.mp3");
+  caption(kids.length===1
+    ? kids[0].n+" rises — child of "+s.from+" ("+pat+" pattern). Click it to inspect, or let it live."
+    : kids[0].n+" and "+kids[1].n+" rise — twins split from "+s.from+". Click them to inspect, or let them live.");
+}
+/* --- agent console --- */
+function conLog(msg){const o=$("console-out");const d=document.createElement("div");d.innerHTML='<span style="color:var(--dim)">›</span> '+msg;o.appendChild(d);o.scrollTop=o.scrollHeight;}
+function findCell(q){q=String(q).toLowerCase();return CELLS.find(c=>c.n.toLowerCase()===q);}
+function bestSeed(){return SEEDS.slice().sort((a,b)=>((b.rel*b.nov)/(1+b.times))-((a.rel*a.nov)/(1+a.times)))[0];}
+function scoreAll(){
+  CELLS.filter(isAlive).forEach(c=>{
+    const prod=c.e*c.p*c.l;const card=$("card-"+c.n);
+    card.querySelector(".formula").textContent=c.e.toFixed(2)+" × "+c.p.toFixed(2)+" × "+c.l.toFixed(2)+" = "+(prod===0?"0":fmt(prod));
+    if(prod===0){card.querySelector(".verdict").innerHTML='<span class="verdict sunset">0 → SUNSET</span>';sunsetCell(c,false);}
+    else card.querySelector(".verdict").innerHTML='<span class="verdict stay">'+fmt(prod)+' → STAYS</span>';
+  });
+  conLog("scored all living cells");
+}
+function runCommand(raw){
+  const cmd=String(raw).trim();if(!cmd)return;
+  conLog('<b style="color:#fff">'+cmd.replace(/</g,"&lt;")+'</b>');
+  const t=cmd.toLowerCase();let m;
+  if(t==="help"){conLog("<b>cells</b> · <b>seeds</b> · <b>score</b> · <b>sunset &lt;cell&gt;</b> · <b>boost &lt;cell&gt; &lt;ethos|pathos|logos&gt; to &lt;0–1&gt;</b> · <b>spawn [from &lt;seed&gt;]</b> (uses the seed's chosen pattern) · <b>reset</b>");return;}
+  if(t==="cells"){const a=CELLS.filter(isAlive);conLog(a.length?a.map(c=>"<b>"+c.n+"</b> "+c.ring+" "+c.e.toFixed(2)+"×"+c.p.toFixed(2)+"×"+c.l.toFixed(2)).join("<br>"):"no living cells");return;}
+  if(t==="seeds"){conLog(SEEDS.length?SEEDS.map(s=>"<b>"+s.id+"</b> ← "+s.from+" (rel "+s.rel.toFixed(2)+" · nov "+s.nov.toFixed(2)+" · ×"+s.times+")").join("<br>"):"seedbank empty — sunset a cell first");return;}
+  if(t==="score"){scoreAll();return;}
+  if(t==="reset"){reset();conLog("quilt reset to five living cells");return;}
+  if(m=t.match(/^sunset\s+(\S+)/)){const c=findCell(m[1]);if(!c){conLog("no such cell: "+m[1].replace(/&/g,"&amp;").replace(/</g,"&lt;"));return;}conLog("executing sunset on "+c.n+"…");sunsetCell(c,true);return;}
+  if(m=t.match(/^(boost|set)\s+(\S+)\s+(ethos|pathos|logos)\s+to\s+([\d.]+)/)){
+    const c=findCell(m[2]);if(!c){conLog("no such cell: "+m[2].replace(/&/g,"&amp;").replace(/</g,"&lt;"));return;}
+    if(!isAlive(c)){conLog(c.n+" is already sunset");return;}
+    const k={ethos:"e",pathos:"p",logos:"l"}[m[3]];
+    const vRaw=parseFloat(m[4]);
+    if(!isFinite(vRaw)){conLog("invalid value — boost expects a number 0–1");return;}
+    const v=Math.max(0,Math.min(1,vRaw));
+    c[k]=v;refreshCard(c);renderInspector(c);
+    conLog(c.n+" "+m[3]+" → "+v.toFixed(2)+" (product "+(c.e*c.p*c.l===0?"0":fmt(c.e*c.p*c.l))+")");
+    log(c.n+" "+m[3]+" set to "+v.toFixed(2)+" via console");
+    if(v===0)sunsetCell(c,true);
+    return;}
+  if(m=t.match(/^spawn(?:\s+from\s+(\S+))?/)){
+    const s=m[1]?SEEDS.find(x=>x.id.toLowerCase()===m[1].toLowerCase()):bestSeed();
+    if(!s){conLog("no seeds — sunset a cell first");return;}
+    conLog("spawning from "+s.id+"…");spawnFromSeed(s.id);return;}
+  conLog('unknown command — try <b>help</b>');
+}
+function wireConsole(){
+  $("console-send").onclick=()=>{const i=$("console-in");runCommand(i.value);i.value="";i.focus();};
+  $("console-in").addEventListener("keydown",e=>{if(e.key==="Enter")$("console-send").click();});
+}
+
+/* ---- controls ---- */
+function clearTimers(){S.timers.forEach(clearTimeout);S.timers=[];}
+async function run(){if(S.running||S.done)return;reset();S.running=true;$("run").disabled=true;
+ while(S.idx<STEPS.length&&S.running){await STEPS[S.idx]();S.idx++;}
+ S.running=false;$("run").disabled=S.done;}
+let stepping=false;
+async function stepOnce(){if(S.done||stepping)return;stepping=true;
+ try{if(S.idx===0)reset();S.running=false;clearTimers();
+ if(S.idx<STEPS.length){$("run").disabled=true;await STEPS[S.idx]();S.idx++;if(S.idx>=STEPS.length)S.done=true;$("run").disabled=S.done;}}
+ finally{stepping=false;}}
+function reset(){S.running=false;S.idx=0;S.done=false;clearTimers();
+ CELLS.length=0;CELLS0.forEach(c=>CELLS.push(JSON.parse(JSON.stringify(c))));
+ SEEDS=[];cellSeq=7;selectedName=null;
+ renderCells();renderSeeds();renderInspector(null);
+ $("lastwords").textContent="";$("docname").textContent="";$("scorecalc").textContent="";$("log").innerHTML="";
+ caption("Press ▶ Run the cycle for the scripted witness — or click any cell to play in the sandbox.");
+ $("run").disabled=false;}
+$("run").onclick=run;$("step").onclick=stepOnce;$("reset").onclick=reset;$("mute").onclick=toggleMute;
+$("speed").onchange=e=>{S.speed=parseFloat(e.target.value);};
+renderCells();renderSeeds();renderInspector(null);wireConsole();
+conLog("sandbox live. <b>help</b> lists commands — or click a cell above.");
+</script>
+</body>
+</html>

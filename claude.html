@@ -1,0 +1,891 @@
+<!--
+  PROVENANCE: Claude-lane working build — assembled by the lane harness to the
+  challenge spec; not yet authored by Claude-the-model. Replace with the
+  browser-task output when the real Claude lane runs. Do not attribute any
+  text in this file to Claude.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sunset-quilt — witness page (claude lane)</title>
+<style>
+:root{
+  --bg:#0d1014; --panel:#141a22; --panel2:#10151c; --line:#2b3440;
+  --txt:#d8dee6; --dim:#8b95a3; --faint:#5b6472;
+  --green:#57b37e; --amber:#d9a441; --red:#d95f4b;
+  --mind:#6aa5d8; --body:#d08a5a; --memory:#6fbf8f; --dream:#a98fd6;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+header{padding:22px 28px 14px;border-bottom:1px solid var(--line)}
+h1{font-size:22px;margin:0 0 4px;font-weight:600;letter-spacing:.2px}
+.sub{color:var(--dim);font-size:13px;margin:0}
+.badge{display:inline-block;margin-top:10px;padding:7px 12px;border:1px dashed var(--amber);
+  color:var(--amber);font-size:12.5px;border-radius:6px;background:rgba(217,164,65,.06);max-width:900px}
+.controls{display:flex;gap:10px;align-items:center;padding:16px 28px;flex-wrap:wrap}
+button{background:#1d2530;color:var(--txt);border:1px solid var(--line);border-radius:6px;
+  padding:9px 16px;font-size:14px;cursor:pointer}
+button:hover{border-color:var(--dim);background:#232c38}
+button:disabled{opacity:.4;cursor:default}
+#status{color:var(--dim);font-size:13px;margin-left:6px}
+#status b{color:var(--txt);font-weight:600}
+main{padding:0 28px 28px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:var(--dim);
+  margin:26px 0 12px;font-weight:600}
+h2 .hint{text-transform:none;letter-spacing:0;font-weight:400;color:var(--faint)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 15px;
+  position:relative;transition:filter .8s,opacity .8s,transform .8s}
+.card.dead{filter:grayscale(1);opacity:.62;transform:rotateY(8deg)}
+.card .stamp{position:absolute;top:10px;right:12px;color:var(--red);font-weight:700;font-size:12px;
+  letter-spacing:2px;border:2px solid var(--red);border-radius:4px;padding:2px 8px;
+  transform:rotate(-8deg);display:none}
+.card.dead .stamp{display:block}
+.card .newtag{position:absolute;top:10px;right:12px;color:var(--green);font-weight:700;font-size:12px;
+  letter-spacing:1.5px;border:2px solid var(--green);border-radius:4px;padding:2px 8px;display:none}
+.card.isnew .newtag{display:block}
+.top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.sig{width:13px;height:13px;border-radius:50%;background:#3a434f;flex:none;transition:background .4s,box-shadow .4s}
+.sig.g{background:var(--green);box-shadow:0 0 8px var(--green)}
+.sig.a{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.sig.r{background:var(--red);box-shadow:0 0 8px var(--red)}
+.sig.flicker{animation:flk .18s infinite}
+@keyframes flk{50%{opacity:.25}}
+.cname{font-weight:700;font-size:16px}
+.cid{color:var(--faint);font-size:12px}
+.ring{font-size:11px;padding:2px 8px;border-radius:10px;border:1px solid;margin-left:auto}
+.ring.mind{color:var(--mind);border-color:var(--mind)}
+.ring.body{color:var(--body);border-color:var(--body)}
+.ring.memory{color:var(--memory);border-color:var(--memory)}
+.ring.dream{color:var(--dream);border-color:var(--dream)}
+.contract{font-size:13px;color:var(--dim);border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);padding:8px 0;margin-bottom:10px}
+.contract div{margin:2px 0}
+.contract b{color:var(--faint);font-weight:600;display:inline-block;width:46px;font-size:11px}
+.contract .deriv{color:var(--faint);font-size:12px}
+.bars{margin-bottom:8px}
+.brow{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:12px}
+.brow .lbl{width:52px;color:var(--dim)}
+.brow .val{width:36px;text-align:right;color:var(--dim);font-variant-numeric:tabular-nums}
+.bar{flex:1;height:8px;background:#222a34;border-radius:4px;overflow:hidden}
+.fill{height:100%;width:0;border-radius:4px;transition:width .9s ease}
+.fill.e{background:var(--body)} .fill.p{background:var(--mind)} .fill.l{background:var(--memory)}
+.product{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;
+  color:var(--txt);margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.verdict{font-size:13px;min-height:20px;color:var(--dim)}
+.verdict .k{color:var(--green);font-weight:600}
+.verdict .h{color:var(--amber);font-weight:600}
+.verdict .s{color:var(--red);font-weight:600}
+.peers{font-size:12px;color:var(--faint);margin-top:4px}
+.lineage{font-size:12px;color:var(--green);margin-top:6px}
+.panels{display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:14px}
+@media(max-width:1100px){.panels{grid-template-columns:1fr}}
+.panel{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:14px 15px;min-height:280px}
+.panel h3{margin:0 0 4px;font-size:14px;font-weight:600}
+.panel .note{font-size:12px;color:var(--faint);margin:0 0 10px}
+.docscroll,.seedscroll{max-height:340px;overflow-y:auto}
+.doc{margin:0 0 14px;font-size:13.5px}
+.doc .dh{color:var(--amber);font-weight:700;font-size:12px;letter-spacing:1.5px;margin-bottom:4px}
+.doc .db{white-space:pre-wrap;color:var(--txt)}
+.doc .dissent{color:var(--amber);font-size:12.5px;border-left:2px solid var(--amber);
+  padding-left:10px;margin-top:8px}
+.seed{border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-bottom:10px;
+  background:var(--panel);font-size:13px}
+.seed.sel{border-color:var(--green)}
+.seed .sid{font-weight:700}
+.seed .src{color:var(--faint);font-size:12px}
+.seed table{width:100%;font-size:12.5px;margin-top:6px;border-collapse:collapse;color:var(--dim)}
+.seed td{padding:1px 0;font-variant-numeric:tabular-nums}
+.seed td:last-child{text-align:right;color:var(--txt)}
+.seed .calc{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--dim);margin-top:6px}
+.seed .fb{font-size:12px;color:var(--green);margin-top:6px}
+.formula{font-size:12.5px;color:var(--faint);margin-bottom:10px}
+.formula code{color:var(--dim);font-family:ui-monospace,Menlo,Consolas,monospace}
+#log{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;
+  max-height:340px;overflow-y:auto;color:var(--dim)}
+#log div{padding:2px 0;border-bottom:1px dotted #1e2530}
+#log .h{color:var(--faint)}
+#log .r{color:var(--red)} #log .g{color:var(--green)} #log .a{color:var(--amber)}
+footer{padding:18px 28px 30px;border-top:1px solid var(--line);color:var(--faint);font-size:12.5px}
+footer .badge{margin-top:0}
+.cursor{display:inline-block;width:8px;background:var(--amber);animation:flk .7s infinite}
+/* ---- interactive sandbox ---- */
+#cells .card{cursor:pointer}
+#cells .card.selected{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber)}
+.card.executing{animation:execpulse 1.4s ease}
+@keyframes execpulse{0%{box-shadow:0 0 0 0 rgba(217,95,75,.8)}50%{box-shadow:0 0 30px 8px rgba(217,95,75,.45)}100%{box-shadow:0 0 0 0 rgba(217,95,75,0)}}
+.card.isnew{animation:seeddrop .9s ease}
+.seed.sel2{animation:seeddrop .8s ease}
+@keyframes seeddrop{0%{transform:translateY(-14px);opacity:0}100%{transform:none;opacity:1}}
+#inspector input[type=range]{cursor:pointer}
+#console-out div{padding:2px 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>sunset-quilt &mdash; witness page</h1>
+  <p class="sub">Quilt cells + the Sunset Ecosystem dignity protocol. One button runs the whole cycle: five living cells, scored rounds, a sunset, a seed, a next generation.</p>
+  <div class="badge">PROVENANCE &mdash; Claude-lane working build: assembled by the lane harness to the challenge spec; not yet authored by Claude-the-model. When the real Claude lane runs (browser task to claude.ai), its output replaces this page.</div>
+</header>
+<div class="controls">
+  <button id="bRun">&#9654; Run the cycle</button>
+  <button id="bStep">Step</button>
+  <button id="bAuto">Auto</button>
+  <button id="bReset">Reset</button>
+  <button id="bMute" aria-pressed="false">&#x1F50A; Audio</button>
+  <span id="status">ready &mdash; press <b>&#9654; Run the cycle</b></span>
+</div>
+<main>
+  <h2>Living cells <span class="hint">&mdash; name, ring, contract; trinity bars; Jev signal light (+1 go / 0 hold / &minus;1 stop)</span></h2>
+  <div class="grid" id="cells"></div>
+
+  <div class="panels">
+    <div class="panel">
+      <h3>Last words</h3>
+      <p class="note">A dying cell writes three documents before it goes. Pruning is a writing event, not a deleting event.</p>
+      <div class="docscroll"><div id="docout"><p class="note">empty &mdash; no cell has testified yet.</p></div></div>
+    </div>
+    <div class="panel">
+      <h3>SeedBank</h3>
+      <p class="note">Onboardings land here as seeds. Selection: <code>(relevance &times; novelty) / (1 + times_selected)</code> &mdash; the decay term stops any seed dominating. A seed's novelty is revised by the fate of the children it spawns.</p>
+      <div class="formula">selection score = <code>(rel &times; nov) / (1 + sel)</code></div>
+      <div class="seedscroll" id="seeds"><p class="note">empty &mdash; no seeds banked yet.</p></div>
+    </div>
+    <div class="panel">
+      <h3>Judgment log</h3>
+      <p class="note">Append-only. Each entry carries the hash of the previous one &mdash; the log is tamper-evident, like a carbon copy.</p>
+      <div id="log"></div>
+    </div>
+  </div>
+  <h2>Sandbox <span class="hint">&mdash; click a cell to inspect it, or drive the whole quilt from the console</span></h2>
+  <div class="panels" style="grid-template-columns:1fr 1fr">
+    <div class="panel">
+      <h3>Inspector</h3>
+      <p class="note">Drag the sliders — push pathos or logos to zero and watch the cell sunset. Ethos is derived from cost: <code>10/(10+cost)</code>.</p>
+      <div id="inspector"><p class="note">click a cell above.</p></div>
+    </div>
+    <div class="panel">
+      <h3>Agent console</h3>
+      <p class="note">Type commands, or let an agent drive. Try <code>help</code>.</p>
+      <div id="console-out" style="min-height:90px;max-height:170px;overflow-y:auto;font-size:13px;margin-bottom:10px"></div>
+      <div style="display:flex;gap:8px"><input id="console-in" placeholder="sunset cell_3 · boost cell_5 logos to 0.9 · spawn · score · help" style="flex:1;background:#0b0e12;border:1px solid var(--line);border-radius:6px;color:var(--txt);padding:9px 12px;font-size:13px"><button id="console-send">Send</button></div>
+    </div>
+  </div>
+</main>
+<footer>
+  <div class="badge">PROVENANCE &mdash; Claude-lane working build: assembled by the lane harness to the challenge spec; not yet authored by Claude-the-model. Replace with the browser-task output when the real Claude lane runs.</div>
+  <p style="margin:10px 0 0">Single self-contained file. No dependencies, no network calls. Trinity: ethos (hardware efficiency) &times; pathos (human usefulness) &times; logos (correctness) &mdash; multiply, don't average; a zero in any dimension sunsets the cell.</p>
+</footer>
+<script>
+"use strict";
+/* ---------- state ---------- */
+const S = {
+  stepIdx: 0, running: false, autoTimer: null, generation: 0,
+  cells: [], seeds: [], logN: 0, prevHash: "00000000", round: 0, done: false
+};
+
+const f2 = x => (Math.round(x * 100) / 100).toFixed(2);
+const ethosOf = c => 10 / (10 + c.cost);          /* cost (k ops/round) feeds ethos visibly */
+const prodOf  = c => ethosOf(c) * c.pathos * c.logos;
+function zeroDim(c){
+  if (ethosOf(c) === 0) return "ethos";
+  if (c.pathos === 0) return "pathos";
+  if (c.logos === 0) return "logos";
+  return null;
+}
+function jev(c){
+  const z = zeroDim(c);
+  if (z) return { v: -1, why: "SUNSET", note: "trinity zero: " + z };
+  const p = prodOf(c);
+  if (p >= 0.5)  return { v: 1,  why: "KEEP", note: "product healthy" };
+  if (p >= 0.15) return { v: 0,  why: "HOLD", note: "product soft — watching" };
+  return { v: -1, why: "STOP", note: "product too low" };
+}
+function fnv(s){
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+  return (h >>> 0).toString(16).padStart(8, "0");
+}
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const $ = id => document.getElementById(id);
+
+/* ---- radio audio: MiniMax TTS (speech-02-hd, male-qn-qingse) clips in audio/ ----
+   Audio objects are created inside the click-driven handler path, and only
+   after a user gesture (Run/Step/Auto/console/spawn clicks), to satisfy
+   autoplay policy. Radio pacing: readback follows the event, so a short
+   delay is authentic. */
+const RADIO = { muted: false };
+function playRadio(f){
+  if (RADIO.muted) return;
+  try { const a = new Audio("audio/" + f); a.play().catch(() => {}); } catch (e) {}
+}
+function toggleMute(){
+  RADIO.muted = !RADIO.muted;
+  const b = $("bMute");
+  b.innerHTML = RADIO.muted ? "&#x1F507; Muted" : "&#x1F50A; Audio";
+  b.setAttribute("aria-pressed", String(RADIO.muted));
+}
+
+/* ---------- initial cells ---------- */
+function freshCells(){
+  return [
+    { id:"cell_1", name:"ledger-scribe", ring:"mind",
+      input:"judgment entries", output:"compacted ledger",
+      why:"keep the record auditable", cost:1.8, pathos:0.80, logos:0.90, alive:true },
+    { id:"cell_2", name:"thermal-watch", ring:"body",
+      input:"sensor readings", output:"overheat alerts",
+      why:"protect the hardware", cost:0.6, pathos:0.70, logos:0.95, alive:true },
+    { id:"cell_3", name:"echo-loom", ring:"dream",
+      input:"dead-end hypotheses", output:"counterfactual sketches",
+      why:"keep imagination cheap", cost:2.0, pathos:0.80, logos:0.90, alive:true },
+    { id:"cell_4", name:"anchor-desk", ring:"memory",
+      input:"raw notes", output:"indexed recall",
+      why:"remember what mattered", cost:2.4, pathos:0.90, logos:0.80, alive:true },
+    { id:"cell_5", name:"quiet-gate", ring:"mind",
+      input:"inbound requests", output:"routed tasks",
+      why:"keep the queue honest", cost:1.1, pathos:0.75, logos:0.50, alive:true }
+  ];
+}
+
+/* ---------- the dying cell's three documents ---------- */
+const DOCS = {
+  epilogue:
+    "I was built to keep imagination cheap: dead-end hypotheses in, counterfactual sketches out. " +
+    "In round 12 my sketcher started fanning out — beam width 4, sketches nobody opened. " +
+    "Round 13 cost ledger: 38.0k ops against 1.8k budgeted. " +
+    "The trinity is a verdict, not an opinion: 0.21 × 0.00 × 0.90 = 0. " +
+    "A zero in pathos — nobody was served. Sunset is correct.\n— echo-loom",
+  summary:
+    "Work log, rounds 1–13. 4,112 sketches produced; 311 read; 9 reused. " +
+    "Failed approaches: (1) doubled beam width — cost doubled, reads unchanged; " +
+    "(2) topic cache — 4% hit rate, the sketches are too idiosyncratic to reuse; " +
+    "(3) a smaller sketcher model — logos 0.9 → 0.5, sketches incoherent. " +
+    "What worked: round-robin topic rotation held reads flat while cost grew. " +
+    "Lesson: cheap imagination has a price ceiling, and mine crossed it in round 12.",
+  onboarding:
+    "To the next cell that tries counterfactuals: keep beam width 1 until a reader asks for more. " +
+    "Track reads-per-sketch from day one — under 5% and you are decoration. " +
+    "Topic rotation works; pair it with a hard cost cap and you will outlive me. " +
+    "Look in the cache-miss logs first; that is where I should have looked.\n" +
+    "— echo-loom, child of none, parent of whoever is next",
+  dissent:
+    "contested — cell_1 (ledger-scribe) voted KEEP: “the sketches stayed readable in the ledger.” " +
+    "Overruled by the trinity zero. Recorded here so the disagreement survives the sunset."
+};
+
+/* ---------- rendering ---------- */
+function renderCells(){
+  const host = $("cells");
+  host.innerHTML = "";
+  S.cells.forEach(c => {
+    const e = ethosOf(c), p = prodOf(c);
+    const el = document.createElement("div");
+    el.className = "card" + (c.alive ? "" : " dead") + (c.isNew ? " isnew" : "");
+    el.id = "card-" + c.id;
+    c.isNew = false;   /* B10: the flag is consumed by its first render — children stop re-animating */
+    el.innerHTML =
+      '<div class="stamp">SUNSET</div><div class="newtag">NEW</div>' +
+      '<div class="top"><span class="sig" id="sig-' + c.id + '"></span>' +
+      '<span class="cname">' + c.name + '</span><span class="cid">' + c.id + '</span>' +
+      '<span class="ring ' + c.ring + '">' + c.ring + '</span></div>' +
+      '<div class="contract">' +
+        '<div><b>IN</b>' + c.input + '</div>' +
+        '<div><b>OUT</b>' + c.output + '</div>' +
+        '<div><b>WHY</b>' + c.why + '</div>' +
+        '<div><b>COST</b><span id="cost-' + c.id + '">' + f2(c.cost) + 'k ops/round</span>' +
+        ' <span class="deriv" id="deriv-' + c.id + '">→ ethos = 10/(10+' + f2(c.cost) + ') = ' + f2(e) + '</span></div>' +
+      '</div>' +
+      '<div class="bars">' +
+        barRow("ethos", e, "e", c.id) + barRow("pathos", c.pathos, "p", c.id) + barRow("logos", c.logos, "l", c.id) +
+      '</div>' +
+      '<div class="product" id="prod-' + c.id + '">' + f2(e) + ' × ' + f2(c.pathos) + ' × ' + f2(c.logos) + ' = ' + f2(p) + '</div>' +
+      '<div class="verdict" id="verd-' + c.id + '"></div>' +
+      '<div class="peers" id="peer-' + c.id + '"></div>' +
+      (c.lineage ? '<div class="lineage">↳ ' + c.lineage + '</div>' : '');
+    host.appendChild(el);
+  });
+}
+function barRow(lbl, v, cls, id){
+  return '<div class="brow"><span class="lbl">' + lbl + '</span>' +
+    '<div class="bar"><div class="fill ' + cls + '" id="bar-' + cls + '-' + id + '" style="width:' + (v*100) + '%"></div></div>' +
+    '<span class="val" id="val-' + cls + '-' + id + '">' + f2(v) + '</span></div>';
+}
+function setSig(id, cls){
+  const s = $("sig-" + id);
+  if (s){ s.classList.remove("g","a","r","flicker"); if (cls) s.classList.add(cls); }
+}
+function flicker(id){ const s = $("sig-" + id); if (s) s.classList.add("flicker"); }
+function sigClass(v){ return v === 1 ? "g" : (v === 0 ? "a" : "r"); }
+function verdictHTML(j){
+  const cls = j.v === 1 ? "k" : (j.v === 0 ? "h" : "s");
+  const sign = j.v === 1 ? "+1" : (j.v === 0 ? "0" : "−1");
+  return '<span class="' + cls + '">' + sign + ' ' + j.why + '</span> — ' + j.note;
+}
+function updateCard(c){
+  const e = ethosOf(c), p = prodOf(c);
+  $("bar-e-" + c.id).style.width = (e*100) + "%"; $("val-e-" + c.id).textContent = f2(e);
+  $("bar-p-" + c.id).style.width = (c.pathos*100) + "%"; $("val-p-" + c.id).textContent = f2(c.pathos);
+  $("bar-l-" + c.id).style.width = (c.logos*100) + "%"; $("val-l-" + c.id).textContent = f2(c.logos);
+  $("cost-" + c.id).textContent = f2(c.cost) + "k ops/round";
+  $("deriv-" + c.id).textContent = "→ ethos = 10/(10+" + f2(c.cost) + ") = " + f2(e);
+  $("prod-" + c.id).textContent = f2(e) + " × " + f2(c.pathos) + " × " + f2(c.logos) + " = " + f2(p);
+}
+function log(msg, cls){
+  S.logN++;
+  S.prevHash = fnv(S.prevHash + msg);
+  const d = document.createElement("div");
+  d.innerHTML = '<span class="h">#' + String(S.logN).padStart(4,"0") + '</span> ' +
+    '<span class="' + (cls||"") + '">' + msg + '</span> ' +
+    '<span class="h">→ ' + S.prevHash + '</span>';
+  const L = $("log");
+  L.appendChild(d); L.scrollTop = L.scrollHeight;
+}
+function setStatus(t){ $("status").innerHTML = t; }
+function scoreLine(c){
+  const e = ethosOf(c), p = prodOf(c);
+  return "r" + S.round + " " + c.id + " " + c.name + " " +
+    f2(e) + "×" + f2(c.pathos) + "×" + f2(c.logos) + "=" + f2(p);
+}
+
+/* ---------- SeedBank ---------- */
+function selScore(s){ return (s.relevance * s.novelty) / (1 + s.times); }
+/* B10: pattern <select> choices are preserved across re-renders (renderSeeds rebuilds the DOM) */
+const savedPats = {};
+function renderSeeds(){
+  const host = $("seeds");
+  host.querySelectorAll("select[id^='pat-']").forEach(el => { savedPats[el.id] = el.value; });
+  host.innerHTML = "";
+  if (!S.seeds.length){ host.innerHTML = '<p class="note">empty — no seeds banked yet.</p>'; return; }
+  S.seeds.forEach(s => {
+    const d = document.createElement("div");
+    d.className = "seed" + (s.selected ? " sel" : "");
+    d.id = "seed-" + s.id;
+    d.innerHTML =
+      '<div><span class="sid">' + s.id + '</span> <span class="src">← onboarding of ' + s.from + (s.selected ? " · SELECTED" : "") + '</span></div>' +
+      '<table>' +
+      '<tr><td>relevance</td><td>' + f2(s.relevance) + '</td></tr>' +
+      '<tr><td>novelty</td><td id="nov-' + s.id + '">' + f2(s.novelty) + '</td></tr>' +
+      '<tr><td>times selected</td><td id="ts-' + s.id + '">' + s.times + '</td></tr>' +
+      '<tr><td><b>selection score</b></td><td id="sc-' + s.id + '"><b>' + f2(selScore(s)) + '</b></td></tr>' +
+      '</table>' +
+      '<div class="calc" id="calc-' + s.id + '">(' + f2(s.relevance) + ' × ' + f2(s.novelty) + ') / (1 + ' + s.times + ') = ' + f2(selScore(s)) + '</div>' +
+      (s.feedback ? '<div class="fb" id="fb-' + s.id + '">' + s.feedback + '</div>' : "") +
+      '<div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button data-spawn="' + s.id + '" style="padding:5px 12px;font-size:12.5px">🌱 Spawn</button><label class="src">pattern <select id="pat-' + s.id + '" style="background:#0b0e12;border:1px solid var(--line);border-radius:6px;color:var(--txt);font-size:12px;padding:4px 6px"><option value="faithful">faithful</option><option value="mutate">mutate</option><option value="blend">blend</option><option value="split">split (twins)</option></select></label></div>';
+    host.appendChild(d);
+    const sel = d.querySelector("select");          /* B10: restore the pattern chosen before this re-render */
+    if (sel && savedPats["pat-" + s.id]) sel.value = savedPats["pat-" + s.id];
+  });
+}
+$("seeds").addEventListener("click", e => {
+  const b = e.target.closest("[data-spawn]");
+  if (!b) return;
+  spawnFromSeedClaude(b.dataset.spawn);
+});
+function updateSeed(s){
+  $("nov-" + s.id).textContent = f2(s.novelty);
+  $("ts-" + s.id).textContent = s.times;
+  $("sc-" + s.id).innerHTML = "<b>" + f2(selScore(s)) + "</b>";
+  $("calc-" + s.id).textContent =
+    "(" + f2(s.relevance) + " × " + f2(s.novelty) + ") / (1 + " + s.times + ") = " + f2(selScore(s));
+  if (s.feedback){
+    let fb = $("fb-" + s.id);
+    if (!fb){ fb = document.createElement("div"); fb.className = "fb"; fb.id = "fb-" + s.id; $("seed-" + s.id).appendChild(fb); }
+    fb.textContent = s.feedback;
+  }
+}
+
+/* ---------- typewriter ---------- */
+function typeText(el, text, gen){
+  if (gen === undefined) gen = S.generation;
+  return new Promise(res => {
+    let i = 0;
+    const t = setInterval(() => {
+      if (gen !== S.generation){ clearInterval(t); res(); return; }  /* B5: reset orphaned this typing */
+      i += 3;
+      el.innerHTML = text.slice(0, i).replace(/</g,"&lt;") + '<span class="cursor">&nbsp;</span>';
+      const sc = el.closest(".docscroll");                            /* B9: scroll the real scroll container */
+      if (sc) sc.scrollTop = sc.scrollHeight;
+      if (i >= text.length){ clearInterval(t); el.innerHTML = text.replace(/</g,"&lt;"); res(); }
+    }, 24);
+  });
+}
+async function testifyDocs(parts, gen){
+  if (gen === undefined) gen = S.generation;
+  const out = $("docout");
+  out.innerHTML = "";
+  for (const [head, body, extra] of parts){
+    if (gen !== S.generation) return;             /* B5: bail on a stale generation */
+    const d = document.createElement("div");
+    d.className = "doc";
+    d.innerHTML = '<div class="dh">' + head + '</div><div class="db"></div>';
+    out.appendChild(d);
+    await typeText(d.querySelector(".db"), body, gen);
+    if (extra){
+      const ds = document.createElement("div");
+      ds.className = "dissent";
+      ds.textContent = extra;
+      d.appendChild(ds);
+    }
+    await wait(350);
+  }
+}
+async function testify(gen){
+  await testifyDocs([["EPILOGUE", DOCS.epilogue, DOCS.dissent],["SUMMARY", DOCS.summary],["ONBOARDING", DOCS.onboarding]], gen);
+}
+
+/* ---------- the scripted cycle ---------- */
+const cell3 = () => S.cells.find(c => c.id === "cell_3");
+const living = () => S.cells.filter(c => c.alive);
+
+const steps = [
+{ name: "boot — five cells, four rings",
+  exec: async () => {
+    S.cells = freshCells(); S.round = 0;
+    renderCells(); renderSeeds();
+    S.cells.forEach(c => { flicker(c.id); });
+    log("quilt booted — 5 cells across body/mind/memory/dream rings; contracts visible", "g");
+    await wait(700);
+  }},
+
+{ name: "round 1 — score",
+  exec: async () => {
+    S.round = 1;
+    living().forEach(c => flicker(c.id));
+    await wait(900);
+    living().forEach(c => {
+      const j = jev(c);
+      setSig(c.id, sigClass(j.v));
+      $("verd-" + c.id).innerHTML = verdictHTML(j);
+      updateCard(c);
+      const cls = j.v === 1 ? "g" : (j.v === 0 ? "a" : "r");
+      log(scoreLine(c) + "  " + (j.v===1?"+1":j.v===0?"0":"−1") + " " + j.why + " (" + j.note + ")", cls);
+    });
+    await wait(400);
+  }},
+
+{ name: "round 1 — close",
+  exec: async () => {
+    $("verd-cell_5").innerHTML += ' <span style="color:var(--faint)">— routing errors up; watching</span>';
+    log("r1 close: 4 keep · 1 hold · 0 sunset", "a");
+    await wait(600);
+  }},
+
+{ name: "round 2 — drift (echo-loom)",
+  exec: async () => {
+    S.round = 2;
+    const q = S.cells.find(c => c.id === "cell_5");
+    q.logos = 0.85;
+    log("r2 recovery: cell_5 routing fixed — logos 0.50 → 0.85", "g");
+    updateCard(q);
+    await wait(500);
+    const c = cell3();
+    log("r2 drift: cell_3 cost 2.0k → 38.0k ops/round (sketcher fanning out); pathos 0.80 → 0.00 (no readers)", "a");
+    c.cost = 38.0;
+    updateCard(c);
+    await wait(900);
+    c.pathos = 0.00;
+    updateCard(c);
+    log("r2 drift: cell_3 product now 0.21 × 0.00 × 0.90 = 0.000 — trinity zero on pathos", "r");
+    await wait(600);
+  }},
+
+{ name: "round 2 — judge",
+  exec: async () => {
+    living().forEach(c => flicker(c.id));
+    await wait(900);
+    living().forEach(c => {
+      const j = jev(c);
+      setSig(c.id, sigClass(j.v));
+      $("verd-" + c.id).innerHTML = verdictHTML(j);
+      updateCard(c);
+      const cls = j.v === 1 ? "g" : (j.v === 0 ? "a" : "r");
+      const sign = j.v === 1 ? "+1" : (j.v === 0 ? "0" : "−1");
+      log(scoreLine(c) + "  " + sign + " " + j.why + " (" + j.note + ")", cls);
+    });
+    /* peer verdicts: the survivors weigh in on the dying cell */
+    $("peer-cell_3").innerHTML =
+      "peer verdicts — cell_1: +1 keep · cell_2: 0 hold · cell_4: −1 stop · cell_5: 0 hold<br>" +
+      "trinity zero rules: <b style='color:var(--red)'>SUNSET</b> (a zero in any dimension sunsets the cell)";
+    log("DISSENT — cell_1 voted KEEP for cell_3 (“sketches stayed readable”); overruled by trinity zero. recorded on the Epilogue.", "a");
+    await wait(600);
+  }},
+
+{ name: "round 2 — sunset",
+  exec: async () => {
+    const c = cell3();
+    c.alive = false;
+    $("card-cell_3").classList.add("dead");
+    playRadio("initiate.mp3");
+    log("SUNSET cell_3 echo-loom — nothing leaves without testifying", "r");
+    await wait(900);
+    playRadio("signoff.mp3");
+  }},
+
+{ name: "last words — the dying cell testifies",
+  exec: async () => {
+    log("testimony: cell_3 writes Epilogue / Summary / Onboarding", "a");
+    await testify();
+  }},
+
+{ name: "seedbank — onboarding lands as a seed",
+  exec: async () => {
+    const sid = "seed_" + (S.seeds.length + 1);
+    const s = { id:sid, from:"cell_3 (echo-loom)", relevance:0.62, novelty:0.90, times:0, selected:false, feedback:"" };
+    S.seeds.push(s);
+    renderSeeds();
+    playRadio("banked.mp3");
+    log("SEED " + sid + " banked from cell_3 — rel 0.62 · nov 0.90 · sel ×0 · score (0.62×0.90)/(1+0) = 0.56", "g");
+    await wait(800);
+  }},
+
+{ name: "round 3 — seed selection",
+  exec: async () => {
+    S.round = 3;
+    const s = S.seeds[0];
+    const before = f2(selScore(s));
+    s.times += 1; s.selected = true;
+    renderSeeds();
+    log("SELECT " + s.id + " — score " + before + " (only seed; decay applies on reselect: next score (0.62×0.90)/(1+1) = 0.28)", "g");
+    await wait(700);
+  }},
+
+{ name: "round 3 — spawn the next generation",
+  exec: async () => {
+    const child = { id:"cell_6", name:"echo-loom-2", ring:"dream",
+      input:"reader-requested topics", output:"counterfactual sketches, beam 1",
+      why:"imagination with a cost cap", cost:1.9, pathos:0.80, logos:0.85,
+      alive:true, isNew:true, lineage:"child of cell_3 · grown from seed_1" };
+    S.cells.push(child);
+    renderCells();
+    /* re-apply settled verdicts to the survivors so the new card doesn't blank them */
+    living().forEach(c => { if (c.id !== "cell_6"){ const j = jev(c); setSig(c.id, sigClass(j.v)); $("verd-" + c.id).innerHTML = verdictHTML(j); } });
+    $("card-cell_3").classList.add("dead");
+    log("SPAWN cell_6 echo-loom-2 — child of cell_3 · grown from seed_1 · contract carries the cost cap", "g");
+    playRadio("online.mp3");
+    await wait(800);
+  }},
+
+{ name: "round 3 — score, and the seed learns",
+  exec: async () => {
+    living().forEach(c => flicker(c.id));
+    await wait(900);
+    living().forEach(c => {
+      const j = jev(c);
+      setSig(c.id, sigClass(j.v));
+      $("verd-" + c.id).innerHTML = verdictHTML(j);
+      updateCard(c);
+      const cls = j.v === 1 ? "g" : (j.v === 0 ? "a" : "r");
+      const sign = j.v === 1 ? "+1" : (j.v === 0 ? "0" : "−1");
+      log(scoreLine(c) + "  " + sign + " " + j.why + " (" + j.note + ")", cls);
+    });
+    /* seed feedback: the child's fate revises the parent seed's novelty */
+    const s = S.seeds[0];
+    const child = S.cells.find(c => c.id === "cell_6");
+    const p = prodOf(child);
+    if (p >= 0.5){ s.novelty = Math.round((s.novelty + 0.03) * 100) / 100; }
+    else { s.novelty = Math.round((s.novelty - 0.05) * 100) / 100; }
+    s.feedback = "seed feedback — novelty 0.90 → " + f2(s.novelty) + ": child cell_6 held (product " + f2(p) + "). selection score now " + f2(selScore(s)) + " — decay working, no seed dominates.";
+    updateSeed(s);
+    log("SEEDBACK " + s.id + " novelty 0.90 → " + f2(s.novelty) + " (child proved) — selection score " + f2(selScore(s)), "g");
+    await wait(600);
+  }},
+
+{ name: "cycle complete",
+  exec: async () => {
+    S.done = true;
+    log("cycle complete — 1 sunset · 1 testimony set · 1 seed · 1 child · 5 living cells · 0 deletions", "g");
+    playRadio("cycle-complete.mp3");
+    setStatus("done — <b>" + S.logN + "</b> log entries · press <b>Reset</b> to replay");
+  }}
+];
+
+/* ---------- interactive sandbox ---------- */
+function findCellClaude(q){
+  q = String(q).toLowerCase();
+  return S.cells.find(c => c.id.toLowerCase() === q || c.name.toLowerCase() === q);
+}
+$("cells").addEventListener("click", e => {
+  const card = e.target.closest(".card");
+  if (!card) return;
+  const c = S.cells.find(x => "card-" + x.id === card.id);
+  if (c) renderInspector(c);
+});
+function renderInspector(c){
+  const box = $("inspector");
+  if (!box) return;
+  document.querySelectorAll("#cells .card").forEach(k => k.classList.remove("selected"));
+  if (!c){ box.innerHTML = '<p class="note">click a cell above.</p>'; return; }
+  const card = $("card-" + c.id);
+  if (card) card.classList.add("selected");
+  const e = ethosOf(c), p = prodOf(c);
+  let h = '<div style="margin-bottom:8px"><span class="cname">' + c.name + '</span> <span class="cid">' + c.id + '</span> ' +
+    (c.alive ? '<span style="color:var(--green)">ALIVE</span>' : '<span style="color:var(--red)">SUNSET</span>') + '</div>';
+  h += '<div class="contract"><div><b>IN</b>' + c.input + '</div><div><b>OUT</b>' + c.output + '</div><div><b>WHY</b>' + c.why + '</div></div>';
+  if (c.alive){
+    h += '<div class="brow"><span class="lbl">cost</span><input type="range" id="isl-cost" min="0.5" max="40" step="0.1" value="' + c.cost + '" style="flex:1;accent-color:var(--amber)"><span class="val" id="islv-cost" style="width:70px">' + f2(c.cost) + 'k</span></div>';
+    h += '<div class="brow"><span class="lbl">pathos</span><input type="range" id="isl-pathos" min="0" max="1" step="0.01" value="' + c.pathos + '" style="flex:1;accent-color:var(--mind)"><span class="val" id="islv-pathos">' + f2(c.pathos) + '</span></div>';
+    h += '<div class="brow"><span class="lbl">logos</span><input type="range" id="isl-logos" min="0" max="1" step="0.01" value="' + c.logos + '" style="flex:1;accent-color:var(--memory)"><span class="val" id="islv-logos">' + f2(c.logos) + '</span></div>';
+    h += '<div class="product" id="insp-prod">ethos ' + f2(e) + ' (from cost) × pathos ' + f2(c.pathos) + ' × logos ' + f2(c.logos) + ' = <b>' + f2(p) + '</b></div>';
+    h += '<div style="margin-top:10px"><button id="insp-kill" style="border-color:var(--red);color:var(--red)">☠ Sunset this cell</button></div>';
+  } else {
+    h += '<p class="note">testified and gone. its seed lives in the SeedBank.</p>';
+  }
+  box.innerHTML = h;
+  if (c.alive){
+    $("isl-cost").addEventListener("input", ev => { c.cost = parseFloat(ev.target.value); onInspChange(c); });
+    $("isl-pathos").addEventListener("input", ev => { c.pathos = parseFloat(ev.target.value); onInspChange(c); });
+    $("isl-logos").addEventListener("input", ev => { c.logos = parseFloat(ev.target.value); onInspChange(c); });
+    $("insp-kill").onclick = () => sunsetCell(c, true);
+  }
+}
+function onInspChange(c){
+  const vc = $("islv-cost"); if (vc) vc.textContent = f2(c.cost) + "k";
+  const vp = $("islv-pathos"); if (vp) vp.textContent = f2(c.pathos);
+  const vl = $("islv-logos"); if (vl) vl.textContent = f2(c.logos);
+  const ip = $("insp-prod");
+  if (ip) ip.innerHTML = 'ethos ' + f2(ethosOf(c)) + ' (from cost) × pathos ' + f2(c.pathos) + ' × logos ' + f2(c.logos) + ' = <b>' + f2(prodOf(c)) + '</b>';
+  updateCard(c);
+  const j = jev(c);
+  setSig(c.id, sigClass(j.v));
+  const vd = $("verd-" + c.id);
+  if (vd) vd.innerHTML = verdictHTML(j);
+  if ((c.pathos === 0 || c.logos === 0) && c.alive) sunsetCell(c, true);
+}
+function docsForClaude(c){
+  const z = zeroDim(c) || "pathos";
+  const zn = z === "pathos" ? "pathos — human usefulness" : "logos — correctness";
+  const wr = z === "pathos" ? "nobody was served" : "the answers stopped being right";
+  return [
+   ["EPILOGUE", "I, " + c.name + " (" + c.id + "), took " + c.input + " and returned " + c.output + " — " + c.why + ". The trinity is a verdict, not an opinion: " + f2(ethosOf(c)) + " × " + f2(c.pathos) + " × " + f2(c.logos) + " = 0. A zero in " + zn + " — " + wr + ". Sunset is correct.\n— " + c.name, null],
+   ["SUMMARY", "Work log. What worked: " + c.why + ". What failed: the " + z + " dimension fell to zero, and a zero anywhere is a zero everywhere. Lesson: guard every dimension — the one you ignore is the one that kills you.\n— " + c.name, null],
+   ["ONBOARDING", "To the next cell that takes my place: I died because " + wr + ". Watch your " + z + " the way I didn't. The trinity multiplies — never let one dimension carry the others.\n— " + c.name + ", parent of whoever is next", null]
+  ];
+}
+async function sunsetCell(c, byUser, gen){
+  if (gen === undefined) gen = S.generation;
+  if (!c || !c.alive || c.dying) return;    /* B2: dying flag set synchronously — no second sunset past this point */
+  c.dying = true;
+  const hadZero = zeroDim(c);                /* B3: remember the pre-pause condition */
+  const card = $("card-" + c.id);
+  if (!card){ c.dying = false; return; }
+  card.classList.add("executing");
+  setStatus("☠ " + (byUser ? "you sunset " : "sunsetting ") + c.name + " — nothing leaves without testifying");
+  log("☠ " + c.id + " " + c.name + " sunset " + (byUser ? "by your hand" : "by the trinity") + " — nothing leaves without testifying", "r");
+  flicker(c.id);
+  playRadio("initiate.mp3");
+  await wait(1500);
+  if (gen !== S.generation){ card.classList.remove("executing"); c.dying = false; return; }  /* B5: reset orphaned this sunset */
+  if (hadZero && !zeroDim(c)){               /* B3: transient zero recovered during the pause — abort */
+    card.classList.remove("executing");
+    c.dying = false;
+    setStatus(c.name + " recovered — sunset aborted");
+    log("ABORT sunset on " + c.id + " — trinity recovered during the pause", "g");
+    return;
+  }
+  card.classList.remove("executing");
+  c.alive = false;
+  card.classList.add("dead");
+  setSig(c.id, "r");
+  log("testimony: " + c.id + " writes Epilogue / Summary / Onboarding", "a");
+  if (c.id === "cell_3") await testifyDocs([["EPILOGUE", DOCS.epilogue, DOCS.dissent],["SUMMARY", DOCS.summary],["ONBOARDING", DOCS.onboarding]], gen);
+  else await testifyDocs(docsForClaude(c), gen);
+  if (gen !== S.generation) return;           /* B5: bail before touching cleared state */
+  playRadio("signoff.mp3");
+  const s = { id: "seed_" + (S.seeds.length + 1), fromId: c.id, fromName: c.name, from: c.id + " (" + c.name + ")",
+    relevance: Math.round(ethosOf(c) * 100) / 100, novelty: 0.90, times: 0, selected: false, feedback: "" };
+  S.seeds.push(s);
+  renderSeeds();
+  const se = $("seed-" + s.id);
+  if (se) se.classList.add("sel2");
+  playRadio("banked.mp3");
+  log("SEED " + s.id + " banked from " + c.id + " — rel " + f2(s.relevance) + " · nov 0.90", "g");
+  setStatus(c.name + " is gone. its onboarding lives as " + s.id + " — spawn its child from the SeedBank.");
+  renderInspector(c);
+}
+/* ---- evolution patterns: per-seed spawn strategy (faithful / mutate / blend / split) ---- */
+function patValueC(sid){ const el = document.getElementById("pat-" + sid); return el ? el.value : "faithful"; }
+function spawnFromSeedClaude(sid){
+  const s = S.seeds.find(x => x.id === sid);
+  if (!s) return;
+  s.times += 1; s.selected = true;
+  const pat = patValueC(sid);
+  const nm0 = s.fromName || String(s.from).replace(/\s+.*$/, "");  /* scripted seed_1 has no fromName */
+  const clamp = x => Math.max(0.05, Math.min(0.99, Math.round(x * 100) / 100));
+  const base = { cost: 1.9, pathos: 0.80, logos: 0.85 };
+  if (pat === "mutate"){ /* jitter one trait: cost scales, pathos/logos shift ±0.15 */
+    const k = ["cost","pathos","logos"][Math.floor(Math.random() * 3)];
+    if (k === "cost") base.cost = Math.max(0.5, Math.min(40, base.cost * (0.7 + Math.random() * 0.6)));
+    else base[k] = clamp(base[k] + (Math.random() * 0.30 - 0.15));
+  }
+  const mk = (id, nm, cost, pathos, logos, lineage) => ({
+    id, name: nm, ring: "dream",
+    input: "reader-requested topics", output: "counterfactual sketches, beam 1",
+    why: "imagination with a cost cap", cost, pathos, logos,
+    alive: true, isNew: true, lineage
+  });
+  let kids;
+  if (pat === "split"){ /* twins: one lean, one rich */
+    const id1 = "cell_" + (S.cellSeq++), id2 = "cell_" + (S.cellSeq++);
+    kids = [
+      mk(id1, nm0 + "-2a", Math.max(0.5, base.cost * 0.6), base.pathos, clamp(base.logos - 0.10),
+         "twin of " + id2 + " · split from " + s.from + " · " + s.id + " (split: lean)"),
+      mk(id2, nm0 + "-2b", Math.min(40, base.cost * 1.6), base.pathos, clamp(base.logos + 0.10),
+         "twin of " + id1 + " · split from " + s.from + " · " + s.id + " (split: rich)")
+    ];
+  } else if (pat === "blend"){ /* blend the parent traits with the strongest living cell */
+    const others = S.cells.filter(c => c.alive && c.id !== (s.fromId || ""));
+    const best = others.slice().sort((a, b) => prodOf(b) - prodOf(a))[0];
+    const id = "cell_" + (S.cellSeq++);
+    kids = [ best
+      ? mk(id, nm0 + "-2", (base.cost + best.cost) / 2, clamp((base.pathos + best.pathos) / 2), clamp((base.logos + best.logos) / 2),
+             "blend of " + s.from + " × " + best.id + " · " + s.id)
+      : mk(id, nm0 + "-2", base.cost, base.pathos, base.logos, "child of " + s.from + " · grown from " + s.id) ];
+  } else { /* faithful (or mutated single) */
+    const id = "cell_" + (S.cellSeq++);
+    kids = [ mk(id, nm0 + "-2", base.cost, base.pathos, base.logos, "child of " + s.from + " · grown from " + s.id + " (" + pat + ")") ];
+  }
+  kids.forEach(k => S.cells.push(k));
+  renderCells();
+  kids.forEach(k => {
+    const j = jev(k);
+    setSig(k.id, sigClass(j.v));
+    const vd = $("verd-" + k.id);
+    if (vd) vd.innerHTML = verdictHTML(j);
+    log("SPAWN " + k.id + " " + k.name + " — <b>" + pat + "</b> pattern · " + k.lineage, "g");
+  });
+  S.cells.forEach(x => {
+    if (x.alive && !kids.find(k => k.id === x.id)){
+      const j = jev(x);
+      setSig(x.id, sigClass(j.v));
+      const vd = $("verd-" + x.id);
+      if (vd) vd.innerHTML = verdictHTML(j);
+    }
+  });
+  renderSeeds();
+  playRadio("online.mp3");
+  setStatus(kids.length === 1
+    ? kids[0].id + " rises — " + pat + " pattern, child of " + s.from + ". click it to inspect."
+    : kids[0].id + " and " + kids[1].id + " rise — twins split from " + s.from + ". click them to inspect.");
+}
+/* --- agent console --- */
+function conLogC(msg){
+  const o = $("console-out");
+  const d = document.createElement("div");
+  d.innerHTML = '<span style="color:var(--faint)">›</span> ' + msg;
+  o.appendChild(d); o.scrollTop = o.scrollHeight;
+}
+function scoreAllC(){
+  living().forEach(c => {
+    const j = jev(c);
+    setSig(c.id, sigClass(j.v));
+    updateCard(c);
+    const vd = $("verd-" + c.id);
+    if (vd) vd.innerHTML = verdictHTML(j);
+    const cls = j.v === 1 ? "g" : (j.v === 0 ? "a" : "r");
+    const sign = j.v === 1 ? "+1" : (j.v === 0 ? "0" : "−1");
+    log(scoreLine(c) + "  " + sign + " " + j.why + " (" + j.note + ")", cls);
+    if (j.v === -1 && c.alive) sunsetCell(c, false);
+  });
+  conLogC("scored all living cells");
+}
+function runCommandC(raw){
+  const cmd = String(raw).trim();
+  if (!cmd) return;
+  conLogC('<b style="color:var(--txt)">' + cmd.replace(/</g, "&lt;") + '</b>');
+  const t = cmd.toLowerCase();
+  let m;
+  if (t === "help"){ conLogC("<b>cells</b> · <b>seeds</b> · <b>score</b> · <b>sunset &lt;cell&gt;</b> · <b>boost &lt;cell&gt; &lt;pathos|logos|cost&gt; to &lt;val&gt;</b> · <b>spawn [from &lt;seed&gt;]</b> (uses the seed's chosen pattern) · <b>reset</b>"); return; }
+  if (t === "cells"){ const a = living(); conLogC(a.length ? a.map(c => "<b>" + c.id + "</b> " + c.name + " (" + c.ring + ")") .join("<br>") : "no living cells"); return; }
+  if (t === "seeds"){ conLogC(S.seeds.length ? S.seeds.map(s => "<b>" + s.id + "</b> ← " + s.from + " (rel " + f2(s.relevance) + " · nov " + f2(s.novelty) + " · ×" + s.times + ")").join("<br>") : "seedbank empty — sunset a cell first"); return; }
+  if (t === "score"){ scoreAllC(); return; }
+  if (t === "reset"){ reset(); conLogC("quilt reset"); return; }
+  if (m = t.match(/^sunset\s+(\S+)/)){
+    const c = findCellClaude(m[1]);
+    if (!c){ conLogC("no such cell: " + m[1].replace(/&/g,"&amp;").replace(/</g,"&lt;")); return; }
+    conLogC("executing sunset on " + c.id + "…"); sunsetCell(c, true); return;
+  }
+  if (m = t.match(/^(boost|set)\s+(\S+)\s+(pathos|logos|cost)\s+to\s+([\d.]+)/)){
+    const c = findCellClaude(m[2]);
+    if (!c){ conLogC("no such cell: " + m[2].replace(/&/g,"&amp;").replace(/</g,"&lt;")); return; }
+    if (!c.alive){ conLogC(c.id + " is already sunset"); return; }
+    const k = m[3];
+    const vRaw = parseFloat(m[4]);
+    if (!isFinite(vRaw)){ conLogC("invalid value: " + m[4].replace(/&/g,"&amp;").replace(/</g,"&lt;") + " — expects a number"); return; }
+    const v = k === "cost" ? Math.max(0.5, Math.min(40, vRaw)) : Math.max(0, Math.min(1, vRaw));
+    c[k] = v;
+    updateCard(c);
+    const j = jev(c); setSig(c.id, sigClass(j.v));
+    const vd = $("verd-" + c.id); if (vd) vd.innerHTML = verdictHTML(j);
+    renderInspector(c);
+    conLogC(c.id + " " + k + " → " + f2(v));
+    log(c.id + " " + k + " set to " + f2(v) + " via console");
+    if ((c.pathos === 0 || c.logos === 0) && c.alive) sunsetCell(c, true);
+    return;
+  }
+  if (m = t.match(/^spawn(?:\s+from\s+(\S+))?$/)){
+    const s = m[1] ? S.seeds.find(x => x.id.toLowerCase() === m[1].toLowerCase())
+                    : S.seeds.slice().sort((a, b) => selScore(b) - selScore(a))[0];
+    if (!s){ conLogC("no seeds — sunset a cell first"); return; }
+    conLogC("spawning from " + s.id + "…"); spawnFromSeedClaude(s.id); return;
+  }
+  conLogC('unknown command — try <b>help</b>');
+}
+function wireConsoleC(){
+  $("console-send").onclick = () => { const i = $("console-in"); runCommandC(i.value); i.value = ""; i.focus(); };
+  $("console-in").addEventListener("keydown", e => { if (e.key === "Enter") $("console-send").click(); });
+}
+
+/* ---------- engine & controls ---------- */
+async function runStep(){
+  if (S.stepIdx >= steps.length || S.running) return;
+  S.running = true;
+  const st = steps[S.stepIdx++];
+  setStatus("step " + S.stepIdx + "/" + steps.length + " — <b>" + st.name + "</b>");
+  try { await st.exec(); } finally { S.running = false; }
+  if (S.stepIdx >= steps.length) stopAuto();
+}
+async function runAll(){
+  stopAuto();
+  const g = S.generation;                    /* B4: reset bumps the generation, orphaning this loop */
+  while (S.stepIdx < steps.length && !S.done && S.generation === g){
+    await runStep();
+    if (!S.done) await wait(500);
+  }
+}
+function startAuto(){
+  stopAuto();
+  S.autoTimer = setInterval(() => { if (!S.running) runStep(); }, 2200);
+  $("bAuto").textContent = "Pause";
+}
+function stopAuto(){
+  if (S.autoTimer){ clearInterval(S.autoTimer); S.autoTimer = null; }
+  $("bAuto").textContent = "Auto";
+}
+function reset(){
+  stopAuto();
+  S.generation++;                            /* B4/B5: orphan any in-flight cycle, sunset, or typewriter */
+  S.stepIdx = 0; S.running = false; S.done = false;
+  S.cells = []; S.seeds = []; S.logN = 0; S.prevHash = "00000000"; S.round = 0; S.cellSeq = 7;
+  $("cells").innerHTML = "";
+  $("docout").innerHTML = '<p class="note">empty — no cell has testified yet.</p>';
+  $("seeds").innerHTML = '<p class="note">empty — no seeds banked yet.</p>';
+  $("log").innerHTML = "";
+  renderInspector(null);
+  setStatus('ready — press <b>&#9654; Run the cycle</b>');
+}
+$("bRun").addEventListener("click", () => { reset(); runAll(); });
+$("bStep").addEventListener("click", () => { stopAuto(); if (S.done) return; runStep(); });
+$("bAuto").addEventListener("click", () => { if (S.done) return; S.autoTimer ? stopAuto() : startAuto(); });
+$("bReset").addEventListener("click", reset);
+$("bMute").addEventListener("click", toggleMute);
+/* boot the sandbox so the page is interactive on load */
+S.cells = freshCells(); S.cellSeq = 7;
+renderCells(); renderSeeds(); renderInspector(null); wireConsoleC();
+log("quilt booted — 5 cells across body/mind/memory/dream. click one to inspect it, or press ▶ Run the cycle for the scripted witness.", "g");
+conLogC("sandbox live. <b>help</b> lists commands.");
+</script>
+</body>
+</html>
